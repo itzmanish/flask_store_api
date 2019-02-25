@@ -1,3 +1,8 @@
+import security
+import sqlite3
+from flask_restful import Resource, reqparse
+
+
 class User:
     """
     class for creating new user object. 
@@ -9,3 +14,74 @@ class User:
         self.id = _id
         self.username = username
         self.password = password
+
+    @classmethod
+    def find_by_username(cls, username):
+        conncetion = sqlite3.connect('data.db')
+        cursor = conncetion.cursor()
+
+        query = 'SELECT * FROM users WHERE username=?'
+
+        results = cursor.execute(query, (username,))
+
+        row = results.fetchone()
+        if row:
+            user = cls(*row)
+        else:
+            user = None
+
+        conncetion.close()
+        return user
+
+    @classmethod
+    def find_by_id(cls, _id):
+        conncetion = sqlite3.connect('data.db')
+        cursor = conncetion.cursor()
+
+        query = 'SELECT * FROM users WHERE id=?'
+
+        results = cursor.execute(query, (_id,))
+
+        row = results.fetchone()
+        if row:
+            user = cls(*row)
+        else:
+            user = None
+
+        conncetion.close()
+        return user
+
+
+class RegisterUser(Resource):
+    """
+    Resource for class Authentication
+    """
+
+    parser = reqparse.RequestParser()
+    parser.add_argument('username',
+                        type=str,
+                        required=True,
+                        help='this field can\'t be blank'
+                        )
+
+    parser.add_argument('password',
+                        type=str,
+                        required=True,
+                        help='this field can\'t be blank'
+                        )
+
+    def post(self):
+        data = RegisterUser.parser.parse_args()
+        try:
+            if data['username'] and data['password']:
+                data['password'] = security.generate_password(data['password'])
+                connection = sqlite3.connect('data.db')
+                cursor = connection.cursor()
+                insert_query = 'INSERT INTO users VALUES (NULL, ?, ?)'
+                cursor.execute(
+                    insert_query, (data['username'], data['password']))
+                connection.commit()
+                connection.close()
+                return 'user created successfully', 201
+        except KeyError:
+            return 'Please fill username and password field both', 409
