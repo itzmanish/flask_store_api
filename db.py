@@ -7,8 +7,10 @@ def create_table():
     cursor = connection.cursor()
 
     # create_table = 'CREATE TABLE IF NOT EXIST users (id INTEGER PRIMARY KEY, username text, password text)'
-    create_table = 'CREATE TABLE users (id INTEGER PRIMARY KEY, username text, password text)'
-    cursor.execute(create_table)
+    create_table_user = 'CREATE TABLE users (id INTEGER PRIMARY KEY, username text, password text)'
+    create_table_items = 'CREATE TABLE items (name text, price real)'
+    cursor.execute(create_table_user)
+    cursor.execute(create_table_items)
 
     connection.commit()
     connection.close()

@@ -1,6 +1,7 @@
 import security
 import sqlite3
 from flask_restful import Resource, reqparse
+from utils import pretty_string
 
 
 class User:
@@ -74,7 +75,12 @@ class RegisterUser(Resource):
         data = RegisterUser.parser.parse_args()
         try:
             if data['username'] and data['password']:
-                data['password'] = security.generate_password(data['password'])
+                # Check for user already exist or not
+                if User.find_by_username(data['username']):
+                    return pretty_string('User already exist.', 409), 409
+
+                data['password'] = security.generate_password(
+                    data['password'])
                 connection = sqlite3.connect('data.db')
                 cursor = connection.cursor()
                 insert_query = 'INSERT INTO users VALUES (NULL, ?, ?)'
@@ -82,6 +88,6 @@ class RegisterUser(Resource):
                     insert_query, (data['username'], data['password']))
                 connection.commit()
                 connection.close()
-                return 'user created successfully', 201
+                return pretty_string('user created successfully.', 201), 201
         except KeyError:
-            return 'Please fill username and password field both', 409
+            return pretty_string('Please fill username and password field both', 409), 409

@@ -12,14 +12,15 @@ def generate_password(password):
 
 
 def authenticate(username, password):
-    user = User.find_by_username(username)
+    try:
+        user = User.find_by_username(username)
+    except:
+        user = None
     if user:
         if check_password_hash(user.password, password):
             return user
         else:
             return 'Authentication failed', 401
-
-    print('No user exists with this username')
 
 
 def identity(payload):
