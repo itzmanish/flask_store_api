@@ -1,4 +1,4 @@
-from users import User
+from models.users import UserModel
 from werkzeug.security import generate_password_hash, check_password_hash
 # users = [
 #     User(1, 'manish', 'pbkdf2:sha256:50000$nmMkXOsz$1113d0057411909c6d69b2cedc7af760612dc11bf3f9e944b3ebfad5711da687')
@@ -13,7 +13,7 @@ def generate_password(password):
 
 def authenticate(username, password):
     try:
-        user = User.find_by_username(username)
+        user = UserModel.find_by_username(username)
     except:
         user = None
     if user:
@@ -25,7 +25,7 @@ def authenticate(username, password):
 
 def identity(payload):
     user_id = payload['identity']
-    return User.find_by_id(user_id)
+    return UserModel.find_by_id(user_id)
 
 
 # authenticate('manish', 'asdf')

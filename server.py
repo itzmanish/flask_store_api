@@ -5,8 +5,8 @@ from flask_restful import Resource, Api
 from flask_jwt import JWT
 from security import authenticate, identity
 from db import create_table
-from users import RegisterUser
-from items import Items, ItemsList
+from resources.users import RegisterUser
+from resources.items import Items, ItemsList
 # initalizing
 app = Flask(__name__)
 app.secret_key = 'Manish'

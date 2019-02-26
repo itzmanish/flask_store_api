@@ -3,6 +3,7 @@ from flask import jsonify
 from flask_restful import Resource, reqparse
 from flask_jwt import jwt_required
 from utils import pretty_string
+from models.items import ItemModel
 
 
 class Items(Resource):
@@ -23,12 +24,12 @@ class Items(Resource):
     def get(self, name):
         # get items from database
         try:
-            row = self.find_by_item(name)
+            row = ItemModel.find_by_name(name)
         except:
             return pretty_string('error on getting data from database', 500)
 
         if row:
-            return {'item': {'name': row[0], 'price': row[1]}}, 200
+            return row.json(), 200
         return pretty_string('no item found.', 404)
 
     # POST method
@@ -36,20 +37,21 @@ class Items(Resource):
     def post(self, name):
         request_data = self.parser.parse_args()
         try:
-            if self.find_by_item(name):
+            if ItemModel.find_by_name(name):
                 return pretty_string('item already exists', 409)
         except:
             return pretty_string('error on getting data from database', 500)
 
-        item = {'name': name, 'price': request_data['price']}
-        self.add_item(item)
-        return item, 201
+        item = ItemModel(name, request_data['price'])
+        item.add_item()
+        return item.json(), 201
 
     # DELETE method
     def delete(self, name):
         try:
-            if self.find_by_item(name):
-                self.delete_item(name)
+            item = ItemModel.find_by_name(name)
+            if item:
+                item.delete_item()
                 return '{} deleted'.format(name)
         except:
             return pretty_string('error on interacting database', 500)
@@ -60,57 +62,19 @@ class Items(Resource):
 
     def put(self, name):
         data = Items.parser.parse_args()
-        item = self.find_by_item(name)
-        updated_item = {'name': name, 'price': data['price']}
+        item = ItemModel.find_by_name(name)
+        updated_item = ItemModel(name, data['price'])
         if item is None:
             try:
-                self.add_item(updated_item)
+                updated_item.add_item()
             except:
                 return pretty_string('An error occured when adding items to database', 500), 500
         else:
             try:
-                self.update_item(updated_item)
+                item.updated_item()
             except:
                 return pretty_string('An error occured when updating items to database', 500), 500
-        return updated_item
-
-    @classmethod
-    def find_by_item(cls, name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-        query = 'SELECT * FROM items WHERE name=?'
-
-        data = cursor.execute(query, (name,))
-        row = data.fetchone()
-        connection.close()
-        return row
-
-    def add_item(self, item):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-        query = 'INSERT INTO items VALUES (?, ?)'
-
-        cursor.execute(query, (item['name'], item['price']))
-        connection.commit()
-        connection.close()
-
-    def update_item(self, item):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-        query = 'UPDATE items SET price=? WHERE name=?'
-
-        cursor.execute(query, (item['price'], item['name']))
-        connection.commit()
-        connection.close()
-
-    def delete_item(self, name):
-        connection = sqlite3.connect('data.db')
-        cursor = connection.cursor()
-        query = 'DELETE FROM items WHERE name=?'
-
-        cursor.execute(query, (name,))
-        connection.commit()
-        connection.close()
+        return updated_item.json()
 
 
 class ItemsList(Resource):
