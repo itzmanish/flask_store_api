@@ -4,7 +4,6 @@ from flask import Flask
 from flask_restful import Resource, Api
 from flask_jwt import JWT
 from security import authenticate, identity
-from db import create_table
 from resources.users import RegisterUser
 from resources.items import Items, ItemsList
 # initalizing
@@ -13,8 +12,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'Manish'
 api = Api(app)
-if not os.path.isfile('./data.db'):
-    create_table()
+
+
+@app.before_first_request
+def create_table():
+    db.create_all()
+
 
 # for auth
 jwt = JWT(app, authenticate, identity)
