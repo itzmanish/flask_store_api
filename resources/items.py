@@ -18,6 +18,11 @@ class Items(Resource):
                         required=True,
                         help='Price field is not valid.'
                         )
+    parser.add_argument('store_id',
+                        type=int,
+                        required=True,
+                        help='Store id required to put items on specific store.'
+                        )
 
     # GET method
     @jwt_required()  # protect route with authorization
@@ -36,7 +41,7 @@ class Items(Resource):
         if ItemModel.find_by_name(name):
             return pretty_string('item already exists', 409)
 
-        item = ItemModel(name, request_data['price'])
+        item = ItemModel(name, **request_data)
         try:
             item.save_to_db()
         except:
@@ -60,9 +65,10 @@ class Items(Resource):
         data = Items.parser.parse_args()
         item = ItemModel.find_by_name(name)
         if item is None:
-            item = ItemModel(name, data['price'])
+            item = ItemModel(name, **data)
         else:
             item.price = data['price']
+            item.store_id = data['store_id']
         item.save_to_db()
         return item.json()
 

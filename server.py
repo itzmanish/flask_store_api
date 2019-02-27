@@ -6,6 +6,7 @@ from flask_jwt import JWT
 from security import authenticate, identity
 from resources.users import RegisterUser
 from resources.items import Items, ItemsList
+from resources.stores import StoreList, Stores
 # initalizing
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -24,10 +25,16 @@ jwt = JWT(app, authenticate, identity)
 
 # route resource and register custom resource to Resource
 # this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
-api.add_resource(Items, '/items/<string:name>')
+api.add_resource(Items, '/item/<string:name>')
 
 # route for retrieve Items
 api.add_resource(ItemsList, '/items')
+
+# route for store
+api.add_resource(Stores, '/store/<string:name>')
+
+# route to retrieve all stores
+api.add_resource(StoreList, '/stores')
 
 # authentication resource
 api.add_resource(RegisterUser, '/register')
