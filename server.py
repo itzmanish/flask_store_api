@@ -9,6 +9,8 @@ from resources.users import RegisterUser
 from resources.items import Items, ItemsList
 # initalizing
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'Manish'
 api = Api(app)
 if not os.path.isfile('./data.db'):
@@ -29,4 +31,6 @@ api.add_resource(RegisterUser, '/register')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
+    from db import db
+    db.init_app(app)
     app.run(debug=True)

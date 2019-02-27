@@ -25,21 +25,14 @@ class RegisterUser(Resource):
 
     def post(self):
         data = RegisterUser.parser.parse_args()
-        try:
-            if data['username'] and data['password']:
-                # Check for user already exist or not
-                if UserModel.find_by_username(data['username']):
-                    return pretty_string('User already exist.', 409), 409
+        if data['username'] and data['password']:
+            # Check for user already exist or not
+            if UserModel.find_by_username(data['username']):
+                return pretty_string('User already exist.', 409), 409
 
-                data['password'] = security.generate_password(
-                    data['password'])
-                connection = sqlite3.connect('data.db')
-                cursor = connection.cursor()
-                insert_query = 'INSERT INTO users VALUES (NULL, ?, ?)'
-                cursor.execute(
-                    insert_query, (data['username'], data['password']))
-                connection.commit()
-                connection.close()
-                return pretty_string('user created successfully.', 201), 201
-        except KeyError:
-            return pretty_string('Please fill username and password field both', 409), 409
+            data['password'] = security.generate_password(
+                data['password'])
+            user = UserModel(**data)
+            user.save_to_db()
+            return pretty_string('user created successfully.', 201), 201
+        return pretty_string('Please check username and password field again.', 404), 404
