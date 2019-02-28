@@ -4,7 +4,7 @@ from flask import Flask
 from flask_restful import Resource, Api
 from flask_jwt import JWT
 from security import authenticate, identity
-from resources.users import RegisterUser
+from resources.users import RegisterUser, User
 from resources.items import Items, ItemsList
 from resources.stores import StoreList, Stores
 # initalizing
@@ -39,6 +39,7 @@ api.add_resource(StoreList, '/stores')
 
 # authentication resource
 api.add_resource(RegisterUser, '/register')
+api.add_resource(User, '/users/<int:user_id>')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":

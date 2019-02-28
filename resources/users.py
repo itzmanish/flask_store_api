@@ -36,3 +36,19 @@ class RegisterUser(Resource):
             user.save_to_db()
             return pretty_string('user created successfully.', 201), 201
         return pretty_string('Please check username and password field again.', 404), 404
+
+
+class User(Resource):
+
+    def get(self, user_id):
+        user = UserModel.find_by_id(user_id)
+        if user:
+            return user.json()
+        return {'msg': 'User not found!'}, 404
+
+    def delete(self, user_id):
+        user = UserModel.find_by_id(user_id)
+        if user:
+            user.delete_from_db()
+            return {'msg': 'User has been successfully deleted!'}, 200
+        return {'msg': 'No user exist with this user id !'}, 404
