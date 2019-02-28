@@ -1,7 +1,7 @@
 import sqlite3
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
+from flask_jwt_extended import jwt_required
 from utils import pretty_string
 from models.items import ItemModel
 
@@ -25,7 +25,7 @@ class Items(Resource):
                         )
 
     # GET method
-    @jwt_required()  # protect route with authorization
+    @jwt_required  # protect route with authorization
     def get(self, name):
         # get items from database
         item = ItemModel.find_by_name(name)

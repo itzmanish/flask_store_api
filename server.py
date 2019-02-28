@@ -2,9 +2,8 @@
 import os
 from flask import Flask
 from flask_restful import Resource, Api
-from flask_jwt import JWT
-from security import authenticate, identity
-from resources.users import RegisterUser, User
+from flask_jwt_extended import JWTManager
+from resources.users import UserRegister, User, UserLogin
 from resources.items import Items, ItemsList
 from resources.stores import StoreList, Stores
 # initalizing
@@ -22,7 +21,7 @@ def create_table():
 
 
 # for auth
-jwt = JWT(app, authenticate, identity)
+jwt = JWTManager(app)
 
 # route resource and register custom resource to Resource
 # this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
@@ -38,7 +37,8 @@ api.add_resource(Stores, '/store/<string:name>')
 api.add_resource(StoreList, '/stores')
 
 # authentication resource
-api.add_resource(RegisterUser, '/register')
+api.add_resource(UserRegister, '/register')
+api.add_resource(UserLogin, '/login')
 api.add_resource(User, '/users/<int:user_id>')
 
 # run app with debug mode if env is development
