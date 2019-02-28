@@ -16,7 +16,11 @@ class StoreModel(db.Model):
         self.name = name
 
     def json(self):
-        return {'name': self.name, 'items': [x.json() for x in self.items.all()]}
+        return {
+            'id': self.id,
+            'name': self.name,
+            'items': [x.json() for x in self.items.all()]
+        }
 
     @classmethod
     def find_by_name(cls, name):
