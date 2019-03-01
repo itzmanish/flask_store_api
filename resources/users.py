@@ -1,23 +1,27 @@
-import security
 import sqlite3
 from flask_restful import Resource, reqparse
 from utils import pretty_string
 from models.users import UserModel
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import (
+    create_access_token,
+    create_refresh_token,
+    jwt_refresh_token_required,
+    get_jwt_identity
+)
 
 
 _user_parser = reqparse.RequestParser()
 _user_parser.add_argument('username',
                           type=str,
                           required=True,
-                          help='this field can\'t be blank'
+                          help='Username can\'t be blank'
                           )
 
 _user_parser.add_argument('password',
                           type=str,
                           required=True,
-                          help='this field can\'t be blank'
+                          help='Password can\'t be blank'
                           )
 
 
@@ -49,6 +53,13 @@ class User(Resource):
             return user.json()
         return {'msg': 'User not found!'}, 404
 
+    def post(self, user_id):
+        user = UserModel.find_by_id(user_id)
+        if user:
+            user.make_admin()
+            return {'msg': 'successfully granted admin rights.'}
+        return {'msg': 'No user exist with this user id.'}, 404
+
     def delete(self, user_id):
         user = UserModel.find_by_id(user_id)
         if user:
@@ -69,4 +80,12 @@ class UserLogin(Resource):
                 'access_token': access_token,
                 'refresh_token': refresh_token
             }
-        return {'Invalid credential !'}, 401
+        return {'msg': 'Invalid credential !'}, 401
+
+
+class TokenRefresh(Resource):
+    @jwt_refresh_token_required
+    def post(self):
+        user = get_jwt_identity()
+        new_token = create_access_token(user, fresh=False)
+        return {'access_token': new_token}

@@ -1,7 +1,13 @@
 import sqlite3
 from flask import jsonify
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import (
+    jwt_required,
+    get_jwt_claims,
+    jwt_optional,
+    get_jwt_identity,
+    jwt_refresh_token_required,
+)
 from utils import pretty_string
 from models.items import ItemModel
 
@@ -34,7 +40,7 @@ class Items(Resource):
         return pretty_string('no item found.', 404)
 
     # POST method
-
+    @jwt_refresh_token_required
     def post(self, name):
         request_data = self.parser.parse_args()
 
@@ -50,8 +56,10 @@ class Items(Resource):
         return item.json(), 201
 
     # DELETE method
+    @jwt_required
     def delete(self, name):
-
+        if get_jwt_claims():
+            return {'msg': 'Admin Priviliges required!'}, 401
         item = ItemModel.find_by_name(name)
         if item:
             item.delete_item()
@@ -79,6 +87,13 @@ class ItemsList(Resource):
     """
 
     # GET request
+    @jwt_optional
     def get(self):
+        items = list(map(lambda x: x.json(), ItemModel.query.all()))
+        user = get_jwt_identity()
+        if user:
+            return {'items': items}
         # or this can be done simply with [x.json for x in ItemModel.query.all()]
-        return {'items': list(map(lambda x: x.json(), ItemModel.query.all()))}
+        return {'items': [item['name'] for item in items],
+                'message': 'Please login to get more info about items.'
+                }

@@ -3,9 +3,10 @@ import os
 from flask import Flask
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
-from resources.users import UserRegister, User, UserLogin
+from resources.users import UserRegister, User, UserLogin, TokenRefresh
 from resources.items import Items, ItemsList
 from resources.stores import StoreList, Stores
+from models.users import UserModel
 # initalizing
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
@@ -22,6 +23,16 @@ def create_table():
 
 # for auth
 jwt = JWTManager(app)
+
+# add claims for superuser
+@jwt.user_claims_loader
+def add_claims_to_jwt(identity):
+    user = UserModel.find_by_id(identity)
+    # returning opposite of is_admin value
+    if user.is_admin:
+        return False  # little bit workarround for further simplicity in resources
+    return True
+
 
 # route resource and register custom resource to Resource
 # this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
@@ -40,6 +51,7 @@ api.add_resource(StoreList, '/stores')
 api.add_resource(UserRegister, '/register')
 api.add_resource(UserLogin, '/login')
 api.add_resource(User, '/users/<int:user_id>')
+api.add_resource(TokenRefresh, '/refresh')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":

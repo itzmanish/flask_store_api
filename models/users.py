@@ -14,13 +14,20 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80),  unique=True)
     password = db.Column(db.String(100))
+    is_admin = db.Column(db.Boolean())
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, is_admin=False):
         self.username = username
         self.password = password
+        self.is_admin = is_admin
+
+    def make_admin(self):
+        self.is_admin = True
+        db.session.add(self)
+        db.session.commit()
 
     def json(self):
-        return {'id': self.id, 'username': self.username}
+        return {'id': self.id, 'username': self.username, 'is_admin': self.is_admin}
 
     def save_to_db(self):
         db.session.add(self)
