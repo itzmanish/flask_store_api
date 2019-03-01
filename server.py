@@ -28,6 +28,11 @@ api = Api(app)
 # for auth
 jwt = JWTManager(app)
 
+
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Not found'}), 404
+
 # add claims for superuser
 @jwt.user_claims_loader
 def add_claims_to_jwt(identity):
