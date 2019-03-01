@@ -3,7 +3,13 @@ import os
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
-from resources.users import UserRegister, User, UserLogin, TokenRefresh
+from resources.users import (
+    UserRegister,
+    User,
+    UserLogin,
+    TokenRefresh,
+    UserLogout,
+)
 from resources.items import Items, ItemsList
 from resources.stores import StoreList, Stores
 from models.users import UserModel
@@ -80,8 +86,7 @@ def revoked_token_callback():
 
 @jwt.token_in_blacklist_loader
 def check_if_token_in_blacklist(decrypted_token):
-    print(decrypted_token['identity'])
-    return decrypted_token['identity'] in BLACKLIST
+    return decrypted_token['jti'] in BLACKLIST
 
 
 # route resource and register custom resource to Resource
@@ -102,6 +107,7 @@ api.add_resource(UserRegister, '/register')
 api.add_resource(UserLogin, '/login')
 api.add_resource(User, '/users/<int:user_id>')
 api.add_resource(TokenRefresh, '/refresh')
+api.add_resource(UserLogout, '/logout')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
