@@ -7,12 +7,16 @@ from resources.users import UserRegister, User, UserLogin, TokenRefresh
 from resources.items import Items, ItemsList
 from resources.stores import StoreList, Stores
 from models.users import UserModel
+from blacklist import BLACKLIST
+
 # initalizing
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
-app.secret_key = 'Manish'
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+app.secret_key = 'Manish'  # app.config['JWT_SECRET_KEY']
 api = Api(app)
 
 
@@ -72,6 +76,12 @@ def revoked_token_callback():
         'description': 'The token has been revoked.',
         'error': 'token_revoked'
     }), 401
+
+
+@jwt.token_in_blacklist_loader
+def check_if_token_in_blacklist(decrypted_token):
+    print(decrypted_token['identity'])
+    return decrypted_token['identity'] in BLACKLIST
 
 
 # route resource and register custom resource to Resource
