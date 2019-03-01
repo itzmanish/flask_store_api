@@ -25,12 +25,6 @@ app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
 app.secret_key = 'Manish'  # app.config['JWT_SECRET_KEY']
 api = Api(app)
 
-
-@app.before_first_request
-def create_table():
-    db.create_all()
-
-
 # for auth
 jwt = JWTManager(app)
 
