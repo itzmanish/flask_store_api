@@ -84,8 +84,21 @@ class UserLogin(Resource):
 
 
 class TokenRefresh(Resource):
+
+    params = reqparse.RequestParser()
+    params.add_argument('password',
+                        type=str,
+                        required=True,
+                        help='Password can\'t be blank'
+                        )
+
+    @classmethod
     @jwt_refresh_token_required
-    def post(self):
-        user = get_jwt_identity()
-        new_token = create_access_token(user, fresh=False)
-        return {'access_token': new_token}
+    def post(cls):
+        data = cls.params.parse_args()
+        user_id = get_jwt_identity()
+        user = UserModel.find_by_id(user_id)
+        if user and check_password_hash(user.password, data['password']):
+            new_token = create_access_token(user.id, fresh=False)
+            return {'access_token': new_token}
+        return {'message': 'Please provide correct password.'}, 401
