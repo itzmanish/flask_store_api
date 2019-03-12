@@ -1,3 +1,4 @@
+from typing import Dict
 from db import db
 
 
@@ -14,12 +15,12 @@ class ItemModel(db.Model):
 
     store = db.relationship('StoreModel')
 
-    def __init__(self, name, price, store_id):
+    def __init__(self, name: str, price: float, store_id: int):
         self.name = name
         self.price = price
         self.store_id = store_id
 
-    def json(self):
+    def json(self) -> Dict:
         return {
             'id': self.id,
             'name': self.name,
@@ -28,7 +29,7 @@ class ItemModel(db.Model):
         }
 
     @classmethod
-    def find_by_name(cls, name):
+    def find_by_name(cls, name: str):
         return cls.query.filter_by(name=name).first()
 
     def save_to_db(self):
