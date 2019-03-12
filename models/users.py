@@ -12,10 +12,10 @@ class UserModel(db.Model):
     """
 
     # table and column initialized
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80),  unique=True)
+    username = db.Column(db.String(80), unique=True)
     password = db.Column(db.String(100))
     is_admin = db.Column(db.Boolean())
 
@@ -30,7 +30,7 @@ class UserModel(db.Model):
         db.session.commit()
 
     def json(self) -> UserJSON:
-        return {'id': self.id, 'username': self.username, 'is_admin': self.is_admin}
+        return {"id": self.id, "username": self.username, "is_admin": self.is_admin}
 
     def save_to_db(self):
         db.session.add(self)

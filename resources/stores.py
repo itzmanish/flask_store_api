@@ -15,19 +15,19 @@ class Stores(Resource):
         store = StoreModel.find_by_name(name)
         if store:
             return store.json(), 200
-        return pretty_string('store not found.', 404)
+        return pretty_string("store not found.", 404)
 
     # POST method
 
     def post(self, name):
         if StoreModel.find_by_name(name):
-            return pretty_string('item already exists', 409)
+            return pretty_string("item already exists", 409)
 
         store = StoreModel(name)
         try:
             store.save_to_db()
         except:
-            return pretty_string('error on interacting database', 500)
+            return pretty_string("error on interacting database", 500)
 
         return store.json(), 201
 
@@ -36,9 +36,9 @@ class Stores(Resource):
         store = StoreModel.find_by_name(name)
         if store:
             store.delete_item()
-            return '{} deleted'.format(name)
+            return "{} deleted".format(name)
 
-        return pretty_string('items is already not exists.', 404)
+        return pretty_string("items is already not exists.", 404)
 
 
 class StoreList(Resource):
@@ -47,4 +47,4 @@ class StoreList(Resource):
     """
 
     def get(self):
-        return {'stores': [x.json() for x in StoreModel.query.all()]}
+        return {"stores": [x.json() for x in StoreModel.query.all()]}

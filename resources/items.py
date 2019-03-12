@@ -19,16 +19,15 @@ class Items(Resource):
 
     # Argument Parser
     parser = reqparse.RequestParser()
-    parser.add_argument('price',
-                        type=float,
-                        required=True,
-                        help='Price field is not valid.'
-                        )
-    parser.add_argument('store_id',
-                        type=int,
-                        required=True,
-                        help='Store id required to put items on specific store.'
-                        )
+    parser.add_argument(
+        "price", type=float, required=True, help="Price field is not valid."
+    )
+    parser.add_argument(
+        "store_id",
+        type=int,
+        required=True,
+        help="Store id required to put items on specific store.",
+    )
 
     # GET method
     @jwt_required  # protect route with authorization
@@ -37,7 +36,7 @@ class Items(Resource):
         item = ItemModel.find_by_name(name)
         if item:
             return item.json(), 200
-        return pretty_string('no item found.', 404)
+        return pretty_string("no item found.", 404)
 
     # POST method
     @jwt_refresh_token_required
@@ -45,13 +44,13 @@ class Items(Resource):
         request_data = self.parser.parse_args()
 
         if ItemModel.find_by_name(name):
-            return pretty_string('item already exists', 409)
+            return pretty_string("item already exists", 409)
 
         item = ItemModel(name, **request_data)
         try:
             item.save_to_db()
         except:
-            return pretty_string('error on interacting database', 500)
+            return pretty_string("error on interacting database", 500)
 
         return item.json(), 201
 
@@ -59,13 +58,13 @@ class Items(Resource):
     @jwt_required
     def delete(self, name):
         if get_jwt_claims():
-            return {'msg': 'Admin Priviliges required!'}, 401
+            return {"msg": "Admin Priviliges required!"}, 401
         item = ItemModel.find_by_name(name)
         if item:
             item.delete_item()
-            return '{} deleted'.format(name)
+            return "{} deleted".format(name)
 
-        return pretty_string('items is already not exists.', 404)
+        return pretty_string("items is already not exists.", 404)
 
     # PUT method
 
@@ -75,8 +74,8 @@ class Items(Resource):
         if item is None:
             item = ItemModel(name, **data)
         else:
-            item.price = data['price']
-            item.store_id = data['store_id']
+            item.price = data["price"]
+            item.store_id = data["store_id"]
         item.save_to_db()
         return item.json()
 
@@ -92,8 +91,9 @@ class ItemsList(Resource):
         items = list(map(lambda x: x.json(), ItemModel.query.all()))
         user = get_jwt_identity()
         if user:
-            return {'items': items}
+            return {"items": items}
         # or this can be done simply with [x.json for x in ItemModel.query.all()]
-        return {'items': [item['name'] for item in items],
-                'message': 'Please login to get more info about items.'
-                }
+        return {
+            "items": [item["name"] for item in items],
+            "message": "Please login to get more info about items.",
+        }
