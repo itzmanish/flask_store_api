@@ -55,7 +55,7 @@ class Items(Resource):
         return item.json(), 201
 
     # DELETE method
-    @jwt_required
+    @jwt_refresh_token_required
     def delete(self, name):
         if get_jwt_claims():
             return {"msg": "Admin Priviliges required!"}, 401
@@ -67,7 +67,7 @@ class Items(Resource):
         return pretty_string("items is already not exists.", 404)
 
     # PUT method
-
+    @jwt_required
     def put(self, name):
         data = Items.parser.parse_args()
         item = ItemModel.find_by_name(name)
