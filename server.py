@@ -29,6 +29,11 @@ api = Api(app)
 jwt = JWTManager(app)
 
 
+@app.before_first_request
+def create_table():
+    db.create_all()
+
+
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({'error': 'Not found'}), 404
