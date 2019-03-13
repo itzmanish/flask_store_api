@@ -24,20 +24,23 @@ class UserModel(db.Model):
         self.password = password
         self.is_admin = is_admin
 
-    def make_admin(self):
+    @classmethod
+    def make_admin(cls):
         self.is_admin = True
-        db.session.add(self)
+        db.session.add(cls)
         db.session.commit()
 
     def json(self) -> UserJSON:
         return {"id": self.id, "username": self.username, "is_admin": self.is_admin}
 
-    def save_to_db(self):
-        db.session.add(self)
+    @classmethod
+    def save_to_db(cls):
+        db.session.add(cls)
         db.session.commit()
 
-    def delete_from_db(self):
-        db.session.delete(self)
+    @classmethod
+    def delete_from_db(cls):
+        db.session.delete(cls)
         db.session.commit()
 
     @classmethod

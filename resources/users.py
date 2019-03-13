@@ -27,8 +27,8 @@ class UserRegister(Resource):
     """
     Resource for class Authentication
     """
-
-    def post(self):
+    @classmethod
+    def post(cls):
         data = _user_parser.parse_args()
         if data["username"] and data["password"]:
             # Check for user already exist or not
@@ -42,26 +42,30 @@ class UserRegister(Resource):
             user.save_to_db()
             return pretty_string("user created successfully.", 201), 201
         return (
-            pretty_string("Please check username and password field again.", 404),
+            pretty_string(
+                "Please check username and password field again.", 404),
             404,
         )
 
 
 class User(Resource):
-    def get(self, user_id):
+    @classmethod
+    def get(cls, user_id):
         user = UserModel.find_by_id(user_id)
         if user:
             return user.json()
         return {"msg": "User not found!"}, 404
 
-    def post(self, user_id):
+    @classmethod
+    def post(cls, user_id):
         user = UserModel.find_by_id(user_id)
         if user:
             user.make_admin()
             return {"msg": "successfully granted admin rights."}
         return {"msg": "No user exist with this user id."}, 404
 
-    def delete(self, user_id):
+    @classmethod
+    def delete(cls, user_id):
         user = UserModel.find_by_id(user_id)
         if user:
             user.delete_from_db()
@@ -70,7 +74,9 @@ class User(Resource):
 
 
 class UserLogin(Resource):
-    def post(self):
+
+    @classmethod
+    def post(cls):
         data = _user_parser.parse_args()
         user = UserModel.find_by_username(data["username"])
         if user and check_password_hash(user.password, data["password"]):
@@ -81,8 +87,10 @@ class UserLogin(Resource):
 
 
 class UserLogout(Resource):
+
+    @classmethod
     @jwt_required
-    def post(self):
+    def post(cls):
         jti = get_raw_jwt()["jti"]  # jti is unique id for jwt tokens
         BLACKLIST.add(jti)
         return {"message": "user successfully logged out!"}

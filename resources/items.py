@@ -30,8 +30,9 @@ class Items(Resource):
     )
 
     # GET method
+    @classmethod
     @jwt_required  # protect route with authorization
-    def get(self, name):
+    def get(cls, name):
         # get items from database
         item = ItemModel.find_by_name(name)
         if item:
@@ -39,9 +40,10 @@ class Items(Resource):
         return pretty_string("no item found.", 404)
 
     # POST method
+    @classmethod
     @jwt_refresh_token_required
-    def post(self, name):
-        request_data = self.parser.parse_args()
+    def post(cls, name):
+        request_data = cls.parser.parse_args()
 
         if ItemModel.find_by_name(name):
             return pretty_string("item already exists", 409)
@@ -55,8 +57,9 @@ class Items(Resource):
         return item.json(), 201
 
     # DELETE method
+    @classmethod
     @jwt_refresh_token_required
-    def delete(self, name):
+    def delete(cls, name):
         if get_jwt_claims():
             return {"msg": "Admin Priviliges required!"}, 401
         item = ItemModel.find_by_name(name)
@@ -67,9 +70,10 @@ class Items(Resource):
         return pretty_string("items is already not exists.", 404)
 
     # PUT method
+    @classmethod
     @jwt_required
-    def put(self, name):
-        data = Items.parser.parse_args()
+    def put(cls, name):
+        data = cls.parser.parse_args()
         item = ItemModel.find_by_name(name)
         if item is None:
             item = ItemModel(name, **data)
@@ -86,8 +90,9 @@ class ItemsList(Resource):
     """
 
     # GET request
+    @classmethod
     @jwt_optional
-    def get(self):
+    def get(cls):
         items = list(map(lambda x: x.json(), ItemModel.query.all()))
         user = get_jwt_identity()
         if user:

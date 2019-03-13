@@ -9,8 +9,8 @@ class Stores(Resource):
     """
 
     # GET method
-
-    def get(self, name):
+    @classmethod
+    def get(cls, name):
         # get items from database
         store = StoreModel.find_by_name(name)
         if store:
@@ -19,7 +19,8 @@ class Stores(Resource):
 
     # POST method
 
-    def post(self, name):
+    @classmethod
+    def post(cls, name):
         if StoreModel.find_by_name(name):
             return pretty_string("item already exists", 409)
 
@@ -32,7 +33,8 @@ class Stores(Resource):
         return store.json(), 201
 
     # DELETE method
-    def delete(self, name):
+    @classmethod
+    def delete(cls, name):
         store = StoreModel.find_by_name(name)
         if store:
             store.delete_item()
@@ -46,5 +48,6 @@ class StoreList(Resource):
     for all store
     """
 
-    def get(self):
+    @classmethod
+    def get(cls):
         return {"stores": [x.json() for x in StoreModel.query.all()]}

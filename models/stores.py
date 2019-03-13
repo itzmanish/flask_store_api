@@ -31,10 +31,12 @@ class StoreModel(db.Model):
     def find_by_name(cls, name: str) -> "StoreModel":
         return cls.query.filter_by(name=name).first()
 
-    def save_to_db(self):
-        db.session.add(self)
+    @classmethod
+    def save_to_db(cls):
+        db.session.add(cls)
         db.session.commit()
 
-    def delete_item(self):
-        db.session.delete(self)
+    @classmethod
+    def delete_item(cls):
+        db.session.delete(cls)
         db.session.commit()
