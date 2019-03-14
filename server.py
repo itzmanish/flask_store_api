@@ -4,7 +4,7 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
 from resources.users import UserRegister, User, UserLogin, TokenRefresh, UserLogout
-
+from marshmallow import ValidationError
 from resources.items import ItemsList, Items
 from resources.stores import StoreList, Stores
 from ma import ma
@@ -29,6 +29,11 @@ jwt = JWTManager(app)
 @app.before_first_request
 def create_table():
     db.create_all()
+
+
+@app.errorhandler(ValidationError)
+def handle_marshmallow_error(err):
+    return jsonify(err.messages), 400
 
 
 @app.errorhandler(404)

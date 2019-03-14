@@ -44,11 +44,7 @@ class Items(Resource):
 
         if ItemModel.find_by_name(name):
             return pretty_string("item already exists", 409)
-        try:
-            item = item_schema.load(item_data)
-
-        except ValidationError as error:
-            return error.messages, 400
+        item = item_schema.load(item_data)
 
         try:
             item.save_to_db()
