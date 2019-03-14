@@ -25,10 +25,7 @@ class UserRegister(Resource):
     """
     @classmethod
     def post(cls):
-        try:
-            data = user_schema.load(request.get_json())
-        except ValidationError as error:
-            return error.messages, 400
+        data = user_schema.load(request.get_json())
 
         # Check for user already exist or not
         if UserModel.find_by_username(data.username):
@@ -72,10 +69,7 @@ class UserLogin(Resource):
 
     @classmethod
     def post(cls):
-        try:
-            user_data = user_schema.load(request.get_json())
-        except ValidationError as error:
-            return error.messages, 400
+        user_data = user_schema.load(request.get_json())
 
         user = UserModel.find_by_username(user_data.username)
         if user and check_password_hash(user.password, user_data.password):
