@@ -1,6 +1,6 @@
 import sqlite3
-from flask import jsonify
-from flask_restful import Resource, reqparse
+from flask import jsonify, request
+from flask_restful import Resource
 from flask_jwt_extended import (
     jwt_required,
     get_jwt_claims,
@@ -8,26 +8,20 @@ from flask_jwt_extended import (
     get_jwt_identity,
     jwt_refresh_token_required,
 )
+
+from marshmallow import ValidationError
 from utils import pretty_string
 from models.items import ItemModel
+from schemas.item import ItemSchema
+
+item_schema = ItemSchema()
+item_list_schema = ItemSchema(many=True)
 
 
 class Items(Resource):
     """
     New resource for Item class
     """
-
-    # Argument Parser
-    parser = reqparse.RequestParser()
-    parser.add_argument(
-        "price", type=float, required=True, help="Price field is not valid."
-    )
-    parser.add_argument(
-        "store_id",
-        type=int,
-        required=True,
-        help="Store id required to put items on specific store.",
-    )
 
     # GET method
     @classmethod
@@ -36,25 +30,32 @@ class Items(Resource):
         # get items from database
         item = ItemModel.find_by_name(name)
         if item:
-            return item.json(), 200
+
+            return item_schema.dump(item), 200
         return pretty_string("no item found.", 404)
 
     # POST method
     @classmethod
     @jwt_refresh_token_required
     def post(cls, name):
-        request_data = cls.parser.parse_args()
+
+        item_data = request.get_json()
+        item_data['name'] = name
 
         if ItemModel.find_by_name(name):
             return pretty_string("item already exists", 409)
+        try:
+            item = item_schema.load(item_data)
 
-        item = ItemModel(name, **request_data)
+        except ValidationError as error:
+            return error.messages, 400
+
         try:
             item.save_to_db()
         except:
             return pretty_string("error on interacting database", 500)
 
-        return item.json(), 201
+        return item_schema.dump(item), 201
 
     # DELETE method
     @classmethod
@@ -73,15 +74,18 @@ class Items(Resource):
     @classmethod
     @jwt_required
     def put(cls, name):
-        data = cls.parser.parse_args()
+
+        data = request.get_json()
+        data['name'] = name
         item = ItemModel.find_by_name(name)
         if item is None:
-            item = ItemModel(name, **data)
+            item = item_schema.load(data)
         else:
             item.price = data["price"]
             item.store_id = data["store_id"]
         item.save_to_db()
-        return item.json()
+
+        return item_schema.dump(item)
 
 
 class ItemsList(Resource):
@@ -93,7 +97,8 @@ class ItemsList(Resource):
     @classmethod
     @jwt_optional
     def get(cls):
-        items = list(map(lambda x: x.json(), ItemModel.query.all()))
+
+        items = item_list_schema.dump(ItemModel.query.all())
         user = get_jwt_identity()
         if user:
             return {"items": items}

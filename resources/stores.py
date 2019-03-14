@@ -2,6 +2,13 @@ from flask_restful import Resource
 from models.stores import StoreModel
 from utils import pretty_string
 
+from marshmallow import ValidationError
+from schemas.store import StoreSchema
+
+
+store_schema = StoreSchema()
+store_list_schema = StoreSchema(many=True)
+
 
 class Stores(Resource):
     """
@@ -14,7 +21,8 @@ class Stores(Resource):
         # get items from database
         store = StoreModel.find_by_name(name)
         if store:
-            return store.json(), 200
+
+            return store_schema.dump(store), 200
         return pretty_string("store not found.", 404)
 
     # POST method
@@ -24,13 +32,13 @@ class Stores(Resource):
         if StoreModel.find_by_name(name):
             return pretty_string("item already exists", 409)
 
-        store = StoreModel(name)
+        store = StoreModel(name=name)
         try:
             store.save_to_db()
         except:
             return pretty_string("error on interacting database", 500)
 
-        return store.json(), 201
+        return store_schema.dump(store), 201
 
     # DELETE method
     @classmethod
@@ -50,4 +58,4 @@ class StoreList(Resource):
 
     @classmethod
     def get(cls):
-        return {"stores": [x.json() for x in StoreModel.query.all()]}
+        return {"stores": store_list_schema.dump(StoreModel.query.all())}

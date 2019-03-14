@@ -4,8 +4,11 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
 from resources.users import UserRegister, User, UserLogin, TokenRefresh, UserLogout
-from resources.items import Items, ItemsList
+
+from resources.items import ItemsList, Items
 from resources.stores import StoreList, Stores
+from ma import ma
+from db import db
 from models.users import UserModel
 from blacklist import BLACKLIST
 
@@ -46,7 +49,8 @@ def add_claims_to_jwt(identity):
 @jwt.expired_token_loader
 def expired_token_callback():
     return (
-        jsonify({"description": "The token has expired.", "error": "token_expired"}),
+        jsonify({"description": "The token has expired.",
+                 "error": "token_expired"}),
         401,
     )
 
@@ -78,7 +82,8 @@ def missing_token_callback(error):
 def token_not_fresh_callback():
     return (
         jsonify(
-            {"description": "The token is not fresh.", "error": "fresh_token_required"}
+            {"description": "The token is not fresh.",
+                "error": "fresh_token_required"}
         ),
         401,
     )
@@ -111,6 +116,7 @@ api.add_resource(Stores, "/store/<string:name>")
 
 # route to retrieve all stores
 api.add_resource(StoreList, "/stores")
+
 
 # authentication resource
 api.add_resource(UserRegister, "/register")
