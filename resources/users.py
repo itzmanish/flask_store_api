@@ -1,6 +1,5 @@
 import sqlite3
-from flask_restful import Resource
-from flask import request
+from flask_restful import Resource, reqparse
 from utils import pretty_string
 from models.users import UserModel
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -13,10 +12,15 @@ from flask_jwt_extended import (
     get_raw_jwt,
 )
 from blacklist import BLACKLIST
-from marshmallow import ValidationError
-from schemas.user import UserSchema
 
-user_schema = UserSchema()
+_user_parser = reqparse.RequestParser()
+_user_parser.add_argument(
+    "username", type=str, required=True, help="Username can't be blank"
+)
+
+_user_parser.add_argument(
+    "password", type=str, required=True, help="Password can't be blank"
+)
 
 
 class UserRegister(Resource):
@@ -25,31 +29,32 @@ class UserRegister(Resource):
     """
     @classmethod
     def post(cls):
-        try:
-            data = user_schema.load(request.get_json())
-        except ValidationError as error:
-            return error.messages, 400
+        data = _user_parser.parse_args()
+        if data["username"] and data["password"]:
+            # Check for user already exist or not
+            if UserModel.find_by_username(data["username"]):
+                return pretty_string("User already exist.", 409), 409
 
-        # Check for user already exist or not
-        if UserModel.find_by_username(data.username):
-            return pretty_string("User already exist.", 409), 409
-
-        data.password = generate_password_hash(
-            data.password, method="pbkdf2:sha256", salt_length=10
+            data["password"] = generate_password_hash(
+                data["password"], method="pbkdf2:sha256", salt_length=10
+            )
+            user = UserModel(**data)
+            user.save_to_db()
+            return pretty_string("user created successfully.", 201), 201
+        return (
+            pretty_string(
+                "Please check username and password field again.", 404),
+            404,
         )
-
-        data.save_to_db()
-
-        return pretty_string("user created successfully.", 201), 201
 
 
 class User(Resource):
     @classmethod
     def get(cls, user_id):
         user = UserModel.find_by_id(user_id)
-        if not user:
-            return {"msg": "User not found!"}, 404
-        return user_schema.dump(user)
+        if user:
+            return user.json()
+        return {"msg": "User not found!"}, 404
 
     @classmethod
     def post(cls, user_id):
@@ -72,13 +77,9 @@ class UserLogin(Resource):
 
     @classmethod
     def post(cls):
-        try:
-            user_data = user_schema.load(request.get_json())
-        except ValidationError as error:
-            return error.messages, 400
-
-        user = UserModel.find_by_username(user_data.username)
-        if user and check_password_hash(user.password, user_data.password):
+        data = _user_parser.parse_args()
+        user = UserModel.find_by_username(data["username"])
+        if user and check_password_hash(user.password, data["password"]):
             access_token = create_access_token(identity=user.id, fresh=True)
             refresh_token = create_refresh_token(identity=user.id)
             return {"access_token": access_token, "refresh_token": refresh_token}
@@ -97,18 +98,18 @@ class UserLogout(Resource):
 
 class TokenRefresh(Resource):
 
+    params = reqparse.RequestParser()
+    params.add_argument(
+        "password", type=str, required=True, help="Password can't be blank"
+    )
+
     @classmethod
     @jwt_refresh_token_required
     def post(cls):
-        try:
-            data = request.get_json()
-            user_id = get_jwt_identity()
-            user = UserModel.find_by_id(user_id)
-            if user and check_password_hash(user.password, data['password']):
-                new_token = create_access_token(user.id, fresh=False)
-                return {"access_token": new_token}
-
-        except KeyError:
-            return {'message': 'Password field is required'}, 400
-
-        return {"message": "Wrong password"}, 401
+        data = cls.params.parse_args()
+        user_id = get_jwt_identity()
+        user = UserModel.find_by_id(user_id)
+        if user and check_password_hash(user.password, data["password"]):
+            new_token = create_access_token(user.id, fresh=False)
+            return {"access_token": new_token}
+        return {"message": "Please provide correct password."}, 401

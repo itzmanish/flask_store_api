@@ -4,8 +4,8 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
 from resources.users import UserRegister, User, UserLogin, TokenRefresh, UserLogout
-from ma import ma
-from db import db
+from resources.items import Items, ItemsList
+from resources.stores import StoreList, Stores
 from models.users import UserModel
 from blacklist import BLACKLIST
 
@@ -46,8 +46,7 @@ def add_claims_to_jwt(identity):
 @jwt.expired_token_loader
 def expired_token_callback():
     return (
-        jsonify({"description": "The token has expired.",
-                 "error": "token_expired"}),
+        jsonify({"description": "The token has expired.", "error": "token_expired"}),
         401,
     )
 
@@ -79,8 +78,7 @@ def missing_token_callback(error):
 def token_not_fresh_callback():
     return (
         jsonify(
-            {"description": "The token is not fresh.",
-                "error": "fresh_token_required"}
+            {"description": "The token is not fresh.", "error": "fresh_token_required"}
         ),
         401,
     )
@@ -102,6 +100,17 @@ def check_if_token_in_blacklist(decrypted_token):
 
 
 # route resource and register custom resource to Resource
+# this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
+api.add_resource(Items, "/item/<string:name>")
+
+# route for retrieve Items
+api.add_resource(ItemsList, "/items")
+
+# route for store
+api.add_resource(Stores, "/store/<string:name>")
+
+# route to retrieve all stores
+api.add_resource(StoreList, "/stores")
 
 # authentication resource
 api.add_resource(UserRegister, "/register")
@@ -112,6 +121,7 @@ api.add_resource(UserLogout, "/logout")
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
+    from db import db
+
     db.init_app(app)
-    ma.init_app(app)
     app.run(debug=True)
