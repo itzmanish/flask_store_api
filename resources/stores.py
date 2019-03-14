@@ -30,13 +30,13 @@ class Stores(Resource):
         if StoreModel.find_by_name(name):
             return pretty_string("item already exists", 409)
 
-        store = store_schema(name=name)
+        store = StoreModel(name=name)
         try:
             store.save_to_db()
         except:
             return pretty_string("error on interacting database", 500)
 
-        return store.json(), 201
+        return store_schema.dump(store), 201
 
     # DELETE method
     @classmethod

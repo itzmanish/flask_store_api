@@ -4,6 +4,8 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
 from resources.users import UserRegister, User, UserLogin, TokenRefresh, UserLogout
+from resources.items import ItemsList, Items
+from resources.stores import StoreList, Stores
 from ma import ma
 from db import db
 from models.users import UserModel
@@ -102,6 +104,18 @@ def check_if_token_in_blacklist(decrypted_token):
 
 
 # route resource and register custom resource to Resource
+# this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
+api.add_resource(Items, "/item/<string:name>")
+
+# route for retrieve Items
+api.add_resource(ItemsList, "/items")
+
+# route for store
+api.add_resource(Stores, "/store/<string:name>")
+
+# route to retrieve all stores
+api.add_resource(StoreList, "/stores")
+
 
 # authentication resource
 api.add_resource(UserRegister, "/register")

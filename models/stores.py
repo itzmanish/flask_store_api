@@ -13,9 +13,6 @@ class StoreModel(db.Model):
 
     items = db.relationship("ItemModel", lazy="dynamic")
 
-    def __init__(self, name: str):
-        self.name = name
-
     @classmethod
     def find_by_name(cls, name: str) -> "StoreModel":
         return cls.query.filter_by(name=name).first()
