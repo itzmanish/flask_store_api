@@ -61,6 +61,7 @@ class User(Resource):
         return pretty_string(USER_NOT_FOUND), 404
 
     @classmethod
+    @jwt_refresh_token_required
     def delete(cls, user_id):
         user = UserModel.find_by_id(user_id)
         if user:
