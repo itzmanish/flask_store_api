@@ -15,6 +15,7 @@ from flask_jwt_extended import (
 from blacklist import BLACKLIST
 from marshmallow import ValidationError
 from schemas.user import UserSchema
+from libs.mailgun import MailGunException
 
 user_schema = UserSchema()
 
@@ -25,19 +26,23 @@ class UserRegister(Resource):
     """
     @classmethod
     def post(cls):
-        data = user_schema.load(request.get_json())
+        user = user_schema.load(request.get_json())
 
         # Check for user already exist or not
-        if UserModel.find_by_username(data.username):
+        if UserModel.find_by_username(user.username):
             return pretty_string(USER_EXIST), 409
 
-        data.password = generate_password_hash(
-            data.password, method="pbkdf2:sha256", salt_length=10
+        user.password = generate_password_hash(
+            user.password, method="pbkdf2:sha256", salt_length=10
         )
         try:
-            data.save_to_db()
-            data.send_confirmation_mail()
+            user.save_to_db()
+            user.send_confirmation_mail()
             return pretty_string(USER_CREATED), 201
+
+        except MailGunException as error:
+            user.delete_from_db()
+            return pretty_string(str(error)), 500
 
         except:
             traceback.print_exc()
