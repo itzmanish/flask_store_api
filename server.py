@@ -3,7 +3,12 @@ import os
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
-from resources.users import UserRegister, User, UserLogin, TokenRefresh, UserLogout
+from resources.users import (UserRegister,
+                             User,
+                             UserLogin,
+                             TokenRefresh,
+                             UserLogout,
+                             UserConfirm)
 from marshmallow import ValidationError
 from resources.items import ItemsList, Items
 from resources.stores import StoreList, Stores
@@ -127,6 +132,7 @@ api.add_resource(StoreList, "/stores")
 api.add_resource(UserRegister, "/register")
 api.add_resource(UserLogin, "/login")
 api.add_resource(User, "/users/<int:user_id>")
+api.add_resource(UserConfirm, '/user_confirm/<int:user_id>')
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
 
