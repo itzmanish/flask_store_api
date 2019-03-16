@@ -3,15 +3,17 @@ import os
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
+from marshmallow import ValidationError
+
 from resources.users import (UserRegister,
                              User,
                              UserLogin,
                              TokenRefresh,
                              UserLogout,
-                             UserConfirm)
-from marshmallow import ValidationError
+                             )
 from resources.items import ItemsList, Items
 from resources.stores import StoreList, Stores
+from resources.confirmation import Confirmation, ConfirmationByUser
 from ma import ma
 from db import db
 from models.users import UserModel
@@ -44,16 +46,6 @@ def handle_marshmallow_error(err):
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({"error": "Not found"}), 404
-
-
-# add claims for superuser
-@jwt.user_claims_loader
-def add_claims_to_jwt(identity):
-    user = UserModel.find_by_id(identity)
-    # returning opposite of is_admin value
-    if user.is_admin:
-        return False  # little bit workarround for further simplicity in resources
-    return True
 
 
 @jwt.expired_token_loader
@@ -113,6 +105,15 @@ def revoked_token_callback():
 def check_if_token_in_blacklist(decrypted_token):
     return decrypted_token["jti"] in BLACKLIST
 
+# add claims for superuser
+@jwt.user_claims_loader
+def add_claims_to_jwt(identity):
+    user = UserModel.find_by_id(identity)
+    # returning opposite of is_admin value
+    if user.is_admin:
+        return False  # little bit workarround for further simplicity in resources
+    return True
+
 
 # route resource and register custom resource to Resource
 # this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
@@ -132,9 +133,11 @@ api.add_resource(StoreList, "/stores")
 api.add_resource(UserRegister, "/register")
 api.add_resource(UserLogin, "/login")
 api.add_resource(User, "/users/<int:user_id>")
-api.add_resource(UserConfirm, '/user_confirm/<int:user_id>')
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
+
+api.add_resource(Confirmation, '/confirmation/<string:confirmation_id>')
+api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":

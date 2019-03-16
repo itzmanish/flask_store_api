@@ -2,6 +2,7 @@ from db import db
 from requests import Response
 from flask import url_for, request
 from libs.mailgun import Mailgun
+from .confirmation import ConfirmationModel
 
 
 class UserModel(db.Model):
@@ -18,8 +19,11 @@ class UserModel(db.Model):
     email = db.Column(db.String(30), nullable=False, unique=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
-    is_admin = db.Column(db.Boolean(), default=False)
-    active = db.Column(db.Boolean(), default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+
+    confirmation = db.relationship(
+        'ConfirmationModel', lazy='dynamic', cascade='all, delete-orphan'
+    )
 
     def make_admin(self):
         self.is_admin = True
@@ -34,6 +38,10 @@ class UserModel(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    @property
+    def most_recent_confirmation(self) -> 'ConfirmationModel':
+        return self.confirmation.order_by(db.desc(ConfirmationModel.expire_at)).first()
+
     @classmethod
     def find_by_username(cls, username: str) -> "UserModel":
         return cls.query.filter_by(username=username).first()
@@ -43,7 +51,8 @@ class UserModel(db.Model):
         return cls.query.filter_by(id=_id).first()
 
     def send_confirmation_mail(self) -> Response:
-        link = request.url_root[0:-1] + url_for("userconfirm", user_id=self.id)
+        link = request.url_root[0:-1] + url_for(
+            "confirmation", confirmation_id=self.most_recent_confirmation.id)
 
         subject = "Registration Confirmation.",
         text = f'Please click the link to confirm your registration: {link}'

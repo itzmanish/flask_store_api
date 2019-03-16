@@ -1,8 +1,6 @@
 import traceback
 from flask_restful import Resource
 from flask import request
-from utils import *
-from models.users import UserModel
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_jwt_extended import (
     create_access_token,
@@ -12,12 +10,18 @@ from flask_jwt_extended import (
     jwt_required,
     get_raw_jwt,
 )
-from blacklist import BLACKLIST
 from marshmallow import ValidationError
-from schemas.user import UserSchema
+from blacklist import BLACKLIST
+
+from utils import *
 from libs.mailgun import MailGunException
+from models.users import UserModel
+from models.confirmation import ConfirmationModel
+from schemas.user import UserSchema
+from schemas.confirmation import ConfirmationSchema
 
 user_schema = UserSchema()
+confirmation_schema = ConfirmationSchema()
 
 
 class UserRegister(Resource):
@@ -37,6 +41,8 @@ class UserRegister(Resource):
         )
         try:
             user.save_to_db()
+            confirmation = ConfirmationModel(user.id)
+            confirmation.save_to_db()
             user.send_confirmation_mail()
             return pretty_string(USER_CREATED), 201
 
@@ -46,6 +52,7 @@ class UserRegister(Resource):
 
         except:
             traceback.print_exc()
+            user.delete_from_db()
             return pretty_string(USER_FAILED_TO_CREATE), 500
 
 
@@ -83,7 +90,8 @@ class UserLogin(Resource):
 
         user = UserModel.find_by_username(user_data.username)
         if user and check_password_hash(user.password, user_data.password):
-            if user.active:
+            confirmation = user.most_recent_confirmation
+            if confirmation and confirmation.confirmed:
                 access_token = create_access_token(
                     identity=user.id, fresh=True)
                 refresh_token = create_refresh_token(identity=user.id)
@@ -100,17 +108,6 @@ class UserLogout(Resource):
         jti = get_raw_jwt()["jti"]  # jti is unique id for jwt tokens
         BLACKLIST.add(jti)
         return pretty_string(USER_LOGGED_OUT)
-
-
-class UserConfirm(Resource):
-    @classmethod
-    def get(cls, user_id: int):
-        user = UserModel.find_by_id(user_id)
-        if not user:
-            return pretty_string(USER_NOT_FOUND), 404
-        user.active = True
-        user.save_to_db()
-        return pretty_string(USER_ACTIVATED)
 
 
 class TokenRefresh(Resource):
