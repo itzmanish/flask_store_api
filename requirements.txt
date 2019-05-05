@@ -5,6 +5,5 @@ Flask-JWT-Extended==3.17.0
 Flask-Migrate==2.4.0
 Flask-RESTful==0.3.7
 Flask-SQLAlchemy==2.3.2
-SQLAlchemy==1.2.18
 Werkzeug==0.14.1
-uwsgi
+SQLAlchemy==1.3.3
