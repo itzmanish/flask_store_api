@@ -7,17 +7,22 @@
 [Live Demo](https://rudra-store-flask-rest-api.herokuapp.com/)
 
 ```
-Endpoint      Methods                 Rule
-------------  ----------------------  -----------------------
-items         DELETE, GET, POST, PUT  /item/<string:name>
-itemslist     GET                     /items
-storelist     GET                     /stores
-stores        DELETE, GET, POST       /store/<string:name>
-token refresh POST                    /refresh
-user          DELETE, GET, POST       /users/<int:user_id>
-user login    POST                    /login
-user logout   POST                    /logout
-user register POST                    /register
+Endpoint            Methods                 Rule
+------------        ----------------------  -----------------------
+confirmationbyuser  GET, POST               /confirmation/user/<int:user_id>
+emailconfirmation   GET                     /confirmation/<string:confirmation_id>
+items               DELETE, GET, POST, PUT  /item/<string:name>
+itemslist           GET                     /items
+phoneconfirmation   POST                    /verify-phone/<string:otp>
+phoneotp            POST                    /send-otp
+static              GET                     /static/<path:filename>
+storelist           GET                     /stores
+stores              DELETE, GET, POST       /store/<string:name>
+tokenrefresh        POST                    /refresh
+user                DELETE, GET, POST       /users/<int:user_id>
+userlogin           POST                    /login
+userlogout          POST                    /logout
+userregister        POST                    /register
 ```
 
 ---
