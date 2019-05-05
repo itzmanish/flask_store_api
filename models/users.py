@@ -1,7 +1,8 @@
 from db import db
 from requests import Response
 from flask import url_for, request
-from libs.mailgun import Mailgun
+from libs.mail import SendGridMail
+from libs.twilio_sms import OTP
 from .confirmation import ConfirmationModel
 
 
@@ -19,6 +20,7 @@ class UserModel(db.Model):
     email = db.Column(db.String(30), nullable=False, unique=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
+    phone = db.Column(db.String(15), nullable=True, unique=True)
     is_admin = db.Column(db.Boolean, default=False)
 
     confirmation = db.relationship(
@@ -40,7 +42,7 @@ class UserModel(db.Model):
 
     @property
     def most_recent_confirmation(self) -> 'ConfirmationModel':
-        return self.confirmation.order_by(db.desc(ConfirmationModel.expire_at)).first()
+        return self.confirmation.order_by(db.desc(ConfirmationModel.email_expire_at)).first()
 
     @classmethod
     def find_by_username(cls, username: str) -> "UserModel":
@@ -58,4 +60,17 @@ class UserModel(db.Model):
         text = f'Please click the link to confirm your registration: {link}'
         html = f'<html>Please click the link to confirm your registration: <a href="{link}">{link}</a></html>'
 
-        return Mailgun.send_mail([self.email], subject, text, html)
+        return SendGridMail.send_mail(self.email, subject, text, html)
+
+    @property
+    def get_confirmation_model(self) -> 'ConfirmationModel':
+        return self.confirmation.filter_by(user_id=self.id).first()
+
+    def send_otp(self, phone) -> Response:
+        confirm_model = self.get_confirmation_model
+        self.phone = phone
+        otp = confirm_model.gen_otp()
+        OTP.send_otp(phone, otp)
+        self.save_to_db()
+
+        return otp

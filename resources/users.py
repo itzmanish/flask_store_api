@@ -14,14 +14,16 @@ from marshmallow import ValidationError
 from blacklist import BLACKLIST
 
 from utils import *
-from libs.mailgun import MailGunException
+from libs.mail import SendGridMailException
 from models.users import UserModel
 from models.confirmation import ConfirmationModel
-from schemas.user import UserSchema
+from schemas.user import UserSchema, UserPhoneSchema
 from schemas.confirmation import ConfirmationSchema
+from flask_jwt_extended import jwt_required
 
 user_schema = UserSchema()
 confirmation_schema = ConfirmationSchema()
+user_phone_schema = UserPhoneSchema()
 
 
 class UserRegister(Resource):
@@ -43,10 +45,10 @@ class UserRegister(Resource):
             user.save_to_db()
             confirmation = ConfirmationModel(user.id)
             confirmation.save_to_db()
-            user.send_confirmation_mail()
+            # user.send_confirmation_mail()
             return pretty_string(USER_CREATED), 201
 
-        except MailGunException as error:
+        except SendGridMailException as error:
             user.delete_from_db()
             return pretty_string(str(error)), 500
 
@@ -54,6 +56,21 @@ class UserRegister(Resource):
             traceback.print_exc()
             user.delete_from_db()
             return pretty_string(USER_FAILED_TO_CREATE), 500
+
+
+class PhoneOTP(Resource):
+    """
+    Resource for Phone no. verification for user
+    """
+    @jwt_required
+    def post(self):
+        user_id = get_jwt_identity()
+        user = UserModel.find_by_id(user_id)
+        data = user_phone_schema.load(request.get_json())
+        if user is not None:
+            user.send_otp(**data)
+
+        return pretty_string(OTP_SENT), 200
 
 
 class User(Resource):
@@ -91,7 +108,7 @@ class UserLogin(Resource):
         user = UserModel.find_by_username(user_data.username)
         if user and check_password_hash(user.password, user_data.password):
             confirmation = user.most_recent_confirmation
-            if confirmation and confirmation.confirmed:
+            if confirmation and confirmation.email_confirmed:
                 access_token = create_access_token(
                     identity=user.id, fresh=True)
                 refresh_token = create_refresh_token(identity=user.id)

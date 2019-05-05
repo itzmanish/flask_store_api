@@ -25,3 +25,5 @@ INVALID_CREDENTIALS = 'Invalid credentials! Please check the credentials you pro
 USER_LOGGED_OUT = "You are successfully logged out!"
 USER_ACTIVATED = "Congratulations. Your account is now activated."
 USER_FAILED_TO_CREATE = 'There is some problem on registering user. Please try again.'
+
+OTP_SENT = 'Otp has been sent.'

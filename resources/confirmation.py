@@ -2,8 +2,9 @@ import traceback
 from time import time
 
 from flask_restful import Resource
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from libs.mailgun import MailGunException
+from libs.mail import SendGridMailException
 from models.users import UserModel
 from models.confirmation import ConfirmationModel
 from utils import pretty_string, USER_NOT_FOUND
@@ -17,22 +18,46 @@ EXPIRED_ACTIVATION = 'The activation code is expired.'
 CONFIRMED = 'Your account has been confirmed. '
 RESEND_SUCCESSFUL = 'A confirmation link has been successfully re-sent to your registered email address.'
 RESEND_FAILED = 'Confirmation link re-sent has been failed.'
+ENTER_VALID_OTP = 'Please enter valid otp'
 
 
-class Confirmation(Resource):
+class EmailConfirmation(Resource):
     @classmethod
     def get(cls, confirmation_id: str):
         confirmation = ConfirmationModel.find_by_id(confirmation_id)
 
         if not confirmation:
             return pretty_string(NOT_FOUND), 404
-        if confirmation.expired:
+        if confirmation.email_expired:
             return pretty_string(EXPIRED_ACTIVATION), 404
-        if confirmation.confirmed:
+        if confirmation.email_confirmed:
             return pretty_string(ALREADY_CONFIRMED), 400
 
-        confirmation.confirmed = True
+        confirmation.email_confirmed = True
         confirmation.save_to_db()
+
+        return pretty_string(CONFIRMED), 200
+
+
+class PhoneConfirmation(Resource):
+
+    @classmethod
+    @jwt_required
+    def post(cls, otp: str):
+        user_id = get_jwt_identity()
+        user = UserModel.find_by_id(user_id)
+        confirmation = user.get_confirmation_model
+
+        if not confirmation:
+            return pretty_string(NOT_FOUND), 404
+        if confirmation.otp_expired:
+            return pretty_string(EXPIRED_ACTIVATION), 404
+        if confirmation.phone_confirmed:
+            return pretty_string(ALREADY_CONFIRMED), 400
+
+        if confirmation.verify_otp(otp):
+            confirmation.phone_confirmed = True
+            confirmation.save_to_db()
 
         return pretty_string(CONFIRMED), 200
 
@@ -51,7 +76,7 @@ class ConfirmationByUser(Resource):
                 'current_time': int(time()),
                 'confirmation': [
                     confirmation_schema.dump(each)
-                    for each in user.confirmation.order_by(ConfirmationModel.expire_at)
+                    for each in user.confirmation.order_by(ConfirmationModel.otp_expire_at)
                 ],
             },
         )
@@ -66,7 +91,7 @@ class ConfirmationByUser(Resource):
         try:
             confirmation = user.most_recent_confirmation
             if confirmation:
-                if confirmation.confirmed:
+                if confirmation.email_confirmed:
                     return pretty_string(ALREADY_CONFIRMED), 400
                 confirmation.force_to_expire()
 
@@ -75,7 +100,7 @@ class ConfirmationByUser(Resource):
             user.send_confirmation_mail()
             return pretty_string(RESEND_SUCCESSFUL), 201
 
-        except MailGunException as e:
+        except SendGridMailException as e:
             return pretty_string(str(e)), 500
 
         except:

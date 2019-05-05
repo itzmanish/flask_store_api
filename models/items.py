@@ -12,6 +12,7 @@ class ItemModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     name = db.Column(db.String(80), nullable=False, unique=True)
+    test = db.Column(db.String(10), nullable=True)
     price = db.Column(db.Float(precision=2), nullable=False)
     store_id = db.Column(db.Integer(), db.ForeignKey(
         "stores.id"), nullable=False)

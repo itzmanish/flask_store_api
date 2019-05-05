@@ -4,16 +4,18 @@ from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from flask_jwt_extended import JWTManager
 from marshmallow import ValidationError
+from flask_migrate import Migrate
 
 from resources.users import (UserRegister,
                              User,
                              UserLogin,
                              TokenRefresh,
                              UserLogout,
+                             PhoneOTP,
                              )
 from resources.items import ItemsList, Items
 from resources.stores import StoreList, Stores
-from resources.confirmation import Confirmation, ConfirmationByUser
+from resources.confirmation import EmailConfirmation, ConfirmationByUser, PhoneConfirmation
 from ma import ma
 from db import db
 from models.users import UserModel
@@ -31,11 +33,12 @@ api = Api(app)
 
 # for auth
 jwt = JWTManager(app)
+migrate = Migrate(app, db)
 
 
-@app.before_first_request
-def create_table():
-    db.create_all()
+# @app.before_first_request
+# def create_table():
+#     db.create_all()
 
 
 @app.errorhandler(ValidationError)
@@ -135,13 +138,17 @@ api.add_resource(UserLogin, "/login")
 api.add_resource(User, "/users/<int:user_id>")
 api.add_resource(TokenRefresh, "/refresh")
 api.add_resource(UserLogout, "/logout")
+api.add_resource(PhoneOTP, '/send-otp')
 
-api.add_resource(Confirmation, '/confirmation/<string:confirmation_id>')
+api.add_resource(EmailConfirmation, '/confirmation/<string:confirmation_id>')
+api.add_resource(PhoneConfirmation, '/verify-phone/<string:otp>')
 api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
     from db import db
+    from flask_migrate import Migrate
+
     db.init_app(app)
     ma.init_app(app)
     app.run(debug=True)
