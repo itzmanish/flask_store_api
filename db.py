@@ -1,23 +1,15 @@
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import MetaData
 
-db = SQLAlchemy()
+convention = {
+    "ix": 'ix_%(column_0_label)s',
+    "uq": "uq_%(table_name)s_%(column_0_name)s",
+    "ck": "ck_%(table_name)s_%(constraint_name)s",
+    "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+    "pk": "pk_%(table_name)s"
+}
 
+metadata = MetaData(naming_convention=convention)
 
-def create_table():
-    connection = sqlite3.connect("data.db")
-
-    cursor = connection.cursor()
-
-    # create_table = 'CREATE TABLE IF NOT EXIST users (id INTEGER PRIMARY KEY, username text, password text)'
-    create_table_user = (
-        "CREATE TABLE users (id INTEGER PRIMARY KEY, username text, password text)"
-    )
-    create_table_items = (
-        "CREATE TABLE items (id INTEGER PRIMARY KEY, name text, price real)"
-    )
-    cursor.execute(create_table_user)
-    cursor.execute(create_table_items)
-
-    connection.commit()
-    connection.close()
+db = SQLAlchemy(metadata=metadata)
