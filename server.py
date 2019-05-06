@@ -146,9 +146,6 @@ api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
-    from db import db
-    from flask_migrate import Migrate
-
     db.init_app(app)
     ma.init_app(app)
     app.run(debug=True)
