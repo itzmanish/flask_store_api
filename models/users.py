@@ -1,7 +1,7 @@
 from db import db
 from requests import Response
 from flask import url_for, request
-from libs.mail import SendGridMail
+from libs.mailgun import Mailgun
 from libs.twilio_sms import OTP
 from .confirmation import ConfirmationModel
 
@@ -18,6 +18,7 @@ class UserModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(30), nullable=False, unique=True)
+    name = db.Column(db.String(30), nullable=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(15), nullable=True, unique=True)
@@ -54,13 +55,13 @@ class UserModel(db.Model):
 
     def send_confirmation_mail(self) -> Response:
         link = request.url_root[0:-1] + url_for(
-            "confirmation", confirmation_id=self.most_recent_confirmation.id)
+            "emailconfirmation", confirmation_id=self.most_recent_confirmation.id)
 
         subject = "Registration Confirmation.",
         text = f'Please click the link to confirm your registration: {link}'
         html = f'<html>Please click the link to confirm your registration: <a href="{link}">{link}</a></html>'
 
-        return SendGridMail.send_mail(self.email, subject, text, html)
+        return Mailgun.send_mail(self.email, subject, text, html)
 
     @property
     def get_confirmation_model(self) -> 'ConfirmationModel':

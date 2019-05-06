@@ -14,7 +14,7 @@ from marshmallow import ValidationError
 from blacklist import BLACKLIST
 
 from utils import *
-from libs.mail import SendGridMailException
+from libs.mailgun import MailGunException
 from models.users import UserModel
 from models.confirmation import ConfirmationModel
 from schemas.user import UserSchema, UserPhoneSchema
@@ -45,10 +45,10 @@ class UserRegister(Resource):
             user.save_to_db()
             confirmation = ConfirmationModel(user.id)
             confirmation.save_to_db()
-            # user.send_confirmation_mail()
+            user.send_confirmation_mail()
             return pretty_string(USER_CREATED), 201
 
-        except SendGridMailException as error:
+        except MailGunException as error:
             user.delete_from_db()
             return pretty_string(str(error)), 500
 

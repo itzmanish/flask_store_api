@@ -4,7 +4,7 @@ from time import time
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from libs.mail import SendGridMailException
+from libs.mailgun import MailGunException
 from models.users import UserModel
 from models.confirmation import ConfirmationModel
 from utils import pretty_string, USER_NOT_FOUND
@@ -100,7 +100,7 @@ class ConfirmationByUser(Resource):
             user.send_confirmation_mail()
             return pretty_string(RESEND_SUCCESSFUL), 201
 
-        except SendGridMailException as e:
+        except MailGunException as e:
             return pretty_string(str(e)), 500
 
         except:
