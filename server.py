@@ -1,5 +1,6 @@
 # importing neccessary library
 import os
+from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
 from marshmallow import ValidationError
@@ -18,6 +19,8 @@ from resources.confirmation import EmailConfirmation, ConfirmationByUser, PhoneC
 from models.users import UserModel
 from app import create_app
 from core import BLACKLIST
+
+load_dotenv('.env')
 
 config_name = os.environ.get('ENV')
 app = create_app(config_name)
