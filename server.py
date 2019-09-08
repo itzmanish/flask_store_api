@@ -2,9 +2,8 @@
 import os
 from flask import Flask, jsonify
 from flask_restful import Resource, Api
-from flask_jwt_extended import JWTManager
 from marshmallow import ValidationError
-from flask_migrate import Migrate
+from flask_jwt_extended import JWTManager
 
 from resources.users import (UserRegister,
                              User,
@@ -16,25 +15,13 @@ from resources.users import (UserRegister,
 from resources.items import ItemsList, Items
 from resources.stores import StoreList, Stores
 from resources.confirmation import EmailConfirmation, ConfirmationByUser, PhoneConfirmation
-from ma import ma
-from db import db
 from models.users import UserModel
-from blacklist import BLACKLIST
+from app import create_app
+from core import BLACKLIST
 
-# initalizing
-app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('DB_URI')
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["PROPAGATE_EXCEPTIONS"] = True
-app.config["JWT_BLACKLIST_ENABLED"] = True
-app.config["JWT_BLACKLIST_TOKEN_CHECKS"] = ["access", "refresh"]
-app.secret_key = os.environ.get('SECRET_KEY')  # app.config['JWT_SECRET_KEY']
-api = Api(app)
-
-# for auth
+config_name = 'development'
+app = create_app(config_name)
 jwt = JWTManager(app)
-migrate = Migrate(app, db)
-
 
 # @app.before_first_request
 # def create_table():
@@ -118,6 +105,8 @@ def add_claims_to_jwt(identity):
     return True
 
 
+api = Api(app)
+
 # route resource and register custom resource to Resource
 # this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
 api.add_resource(Items, "/item/<string:name>")
@@ -146,6 +135,5 @@ api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
-    db.init_app(app)
-    ma.init_app(app)
+
     app.run(debug=True)

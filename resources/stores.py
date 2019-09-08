@@ -1,6 +1,7 @@
 from flask_restful import Resource
 from models.stores import StoreModel
-from utils import *
+from core import pretty_string
+import core.utils as response_string
 
 from marshmallow import ValidationError
 from schemas.store import StoreSchema
@@ -23,20 +24,20 @@ class Stores(Resource):
         if store:
 
             return store_schema.dump(store), 200
-        return pretty_string(STORE_NOT_FOUND), 404
+        return pretty_string(response_string.STORE_NOT_FOUND), 404
 
     # POST method
 
     @classmethod
     def post(cls, name):
         if StoreModel.find_by_name(name):
-            return pretty_string(STORE_EXIST), 409
+            return pretty_string(response_string.STORE_EXIST), 409
 
         store = StoreModel(name=name)
         try:
             store.save_to_db()
         except:
-            return pretty_string(DATABASE_ERROR), 500
+            return pretty_string(response_string.DATABASE_ERROR), 500
 
         return store_schema.dump(store), 201
 
@@ -48,7 +49,7 @@ class Stores(Resource):
             store.delete_item()
             return "{} deleted".format(name)
 
-        return pretty_string(STORE_NOT_EXIST), 404
+        return pretty_string(response_string.STORE_NOT_EXIST), 404
 
 
 class StoreList(Resource):

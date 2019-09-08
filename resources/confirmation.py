@@ -4,10 +4,10 @@ from time import time
 from flask_restful import Resource
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from libs.mailgun import MailGunException
+from core.libs import MailGunException
 from models.users import UserModel
 from models.confirmation import ConfirmationModel
-from utils import pretty_string, USER_NOT_FOUND
+from core.utils import pretty_string, USER_NOT_FOUND
 from schemas.confirmation import ConfirmationSchema
 
 confirmation_schema = ConfirmationSchema()

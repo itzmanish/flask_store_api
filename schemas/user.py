@@ -1,6 +1,6 @@
 from marshmallow import pre_dump, fields
 
-from ma import ma
+from core import ma
 from models.users import UserModel
 
 

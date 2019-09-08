@@ -1,5 +1,5 @@
 
-from db import db
+from core import db
 
 
 class StoreModel(db.Model):

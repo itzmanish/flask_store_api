@@ -11,10 +11,9 @@ from flask_jwt_extended import (
     get_raw_jwt,
 )
 from marshmallow import ValidationError
-from blacklist import BLACKLIST
-
-from utils import *
-from libs.mailgun import MailGunException
+from core import BLACKLIST, pretty_string
+from core.libs import MailGunException
+import core.utils as response_string
 from models.users import UserModel
 from models.confirmation import ConfirmationModel
 from schemas.user import UserSchema, UserPhoneSchema
@@ -36,7 +35,7 @@ class UserRegister(Resource):
 
         # Check for user already exist or not
         if UserModel.find_by_username(user.username):
-            return pretty_string(USER_EXIST), 409
+            return pretty_string(response_string.USER_EXIST), 409
 
         user.password = generate_password_hash(
             user.password, method="pbkdf2:sha256", salt_length=10
@@ -55,7 +54,7 @@ class UserRegister(Resource):
         except:
             traceback.print_exc()
             user.delete_from_db()
-            return pretty_string(USER_FAILED_TO_CREATE), 500
+            return pretty_string(response_string.USER_FAILED_TO_CREATE), 500
 
 
 class PhoneOTP(Resource):
@@ -70,7 +69,7 @@ class PhoneOTP(Resource):
         if user is not None:
             user.send_otp(**data)
 
-        return pretty_string(OTP_SENT), 200
+        return pretty_string(response_string.OTP_SENT), 200
 
 
 class User(Resource):
@@ -78,7 +77,7 @@ class User(Resource):
     def get(cls, user_id):
         user = UserModel.find_by_id(user_id)
         if not user:
-            return pretty_string(USER_NOT_FOUND), 404
+            return pretty_string(response_string.USER_NOT_FOUND), 404
         return user_schema.dump(user)
 
     @classmethod
@@ -86,8 +85,8 @@ class User(Resource):
         user = UserModel.find_by_id(user_id)
         if user:
             user.make_admin()
-            return pretty_string(USER_GRANTED_ADMIN)
-        return pretty_string(USER_NOT_FOUND), 404
+            return pretty_string(response_string.USER_GRANTED_ADMIN)
+        return pretty_string(response_string.USER_NOT_FOUND), 404
 
     @classmethod
     @jwt_refresh_token_required
@@ -95,8 +94,8 @@ class User(Resource):
         user = UserModel.find_by_id(user_id)
         if user:
             user.delete_from_db()
-            return pretty_string(USER_DELETED), 200
-        return pretty_string(USER_NOT_FOUND), 404
+            return pretty_string(response_string.USER_DELETED), 200
+        return pretty_string(response_string.USER_NOT_FOUND), 404
 
 
 class UserLogin(Resource):
@@ -113,8 +112,8 @@ class UserLogin(Resource):
                     identity=user.id, fresh=True)
                 refresh_token = create_refresh_token(identity=user.id)
                 return {"access_token": access_token, "refresh_token": refresh_token}
-            return pretty_string(USER_ACTIVATION_LINK_SENT)
-        return pretty_string(INVALID_CREDENTIALS), 401
+            return pretty_string(response_string.USER_ACTIVATION_LINK_SENT)
+        return pretty_string(response_string.INVALID_CREDENTIALS), 401
 
 
 class UserLogout(Resource):
@@ -124,7 +123,7 @@ class UserLogout(Resource):
     def post(cls):
         jti = get_raw_jwt()["jti"]  # jti is unique id for jwt tokens
         BLACKLIST.add(jti)
-        return pretty_string(USER_LOGGED_OUT)
+        return pretty_string(response_string.USER_LOGGED_OUT)
 
 
 class TokenRefresh(Resource):
@@ -143,4 +142,4 @@ class TokenRefresh(Resource):
         except KeyError:
             return {'message': 'Password field is required'}, 400
 
-        return pretty_string(INVALID_CREDENTIALS), 401
+        return pretty_string(response_string.INVALID_CREDENTIALS), 401

@@ -1,4 +1,4 @@
-from ma import ma
+from core import ma
 from models.stores import StoreModel
 from schemas.item import ItemSchema
 

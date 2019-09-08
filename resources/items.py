@@ -10,7 +10,8 @@ from flask_jwt_extended import (
 )
 
 from marshmallow import ValidationError
-from utils import *
+import core.utils as response_string
+from core import pretty_string
 from models.items import ItemModel
 from schemas.item import ItemSchema
 
@@ -32,7 +33,7 @@ class Items(Resource):
         if item:
 
             return item_schema.dump(item), 200
-        return pretty_string(ITEM_NOT_FOUND)
+        return pretty_string(response_string.ITEM_NOT_FOUND)
 
     # POST method
     @classmethod
@@ -43,13 +44,13 @@ class Items(Resource):
         item_data['name'] = name
 
         if ItemModel.find_by_name(name):
-            return pretty_string(ITEM_EXIST)
+            return pretty_string(response_string.ITEM_EXIST)
         item = item_schema.load(item_data)
 
         try:
             item.save_to_db()
         except:
-            return pretty_string(DATABASE_ERROR)
+            return pretty_string(response_string.DATABASE_ERROR)
 
         return item_schema.dump(item), 201
 
@@ -58,13 +59,13 @@ class Items(Resource):
     @jwt_refresh_token_required
     def delete(cls, name):
         if get_jwt_claims():
-            return pretty_string(ADMIN_PERMISSION_ERROR), 401
+            return pretty_string(response_string.ADMIN_PERMISSION_ERROR), 401
         item = ItemModel.find_by_name(name)
         if item:
             item.delete_item()
             return "{} deleted".format(name)
 
-        return pretty_string(ITEM_NOT_EXIST)
+        return pretty_string(response_string.ITEM_NOT_EXIST)
 
     # PUT method
     @classmethod
@@ -101,5 +102,5 @@ class ItemsList(Resource):
         # or this can be done simply with [x.json for x in ItemModel.query.all()]
         return {
             "items": [item["name"] for item in items],
-            "message": LOGIN_REQUIRED,
+            "message": response_string.LOGIN_REQUIRED,
         }

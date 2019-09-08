@@ -2,7 +2,7 @@ from uuid import uuid4
 from random import randint
 from time import time
 
-from db import db
+from core import db
 
 CONFIRMATION_EMAIL_EXIPIRATION_DELTA = 1800
 CONFIRMATION_PHONE_EXIPIRATION_DELTA = 300

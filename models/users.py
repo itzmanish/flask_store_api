@@ -1,8 +1,7 @@
-from db import db
+from core import db
 from requests import Response
 from flask import url_for, request
-from libs.mailgun import Mailgun
-from libs.twilio_sms import OTP
+from core.libs import Mailgun, OTP
 from .confirmation import ConfirmationModel
 
 

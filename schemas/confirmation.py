@@ -1,4 +1,4 @@
-from ma import ma
+from core import ma
 from models.confirmation import ConfirmationModel
 
 
