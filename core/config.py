@@ -22,7 +22,8 @@ class Production(object):
     DEBUG = False
     TESTING = False
     FLASK_ENV = 'production'
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DB_URI', 'sqlite:///data.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get(
+        'DATABASE_URL', 'sqlite:///data.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     PROPAGATE_EXCEPTIONS = True
     JWT_BLACKLIST_ENABLED = True
