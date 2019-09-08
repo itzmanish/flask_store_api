@@ -19,7 +19,7 @@ from models.users import UserModel
 from app import create_app
 from core import BLACKLIST
 
-config_name = 'development'
+config_name = os.environ.get('ENV')
 app = create_app(config_name)
 jwt = JWTManager(app)
 
@@ -108,7 +108,13 @@ def add_claims_to_jwt(identity):
 api = Api(app)
 
 # route resource and register custom resource to Resource
-# this endpoint can be accessed at http://localhost:5000/students/"any name you can type here"
+@app.route('/')
+def index():
+    """Searches the database for entries, then displays them."""
+    return {'Message': 'Welcome to store rest api v1.0. Please go through README for available routes on this api. ',
+            'Link': 'https://github.com/itzmanish/flask_store_api/blob/advance/README.md'}, 200
+
+
 api.add_resource(Items, "/item/<string:name>")
 
 # route for retrieve Items
@@ -135,5 +141,4 @@ api.add_resource(ConfirmationByUser, '/confirmation/user/<int:user_id>')
 
 # run app with debug mode if env is development
 if __name__ == "__main__":
-
     app.run(debug=True)

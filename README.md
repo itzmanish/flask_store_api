@@ -9,20 +9,21 @@
 ```
 Endpoint            Methods                 Rule
 ------------        ----------------------  -----------------------
-confirmationbyuser  GET, POST               /confirmation/user/<int:user_id>
-emailconfirmation   GET                     /confirmation/<string:confirmation_id>
+home                GET                     /
+storelist           GET                     /stores
+stores              DELETE, GET, POST       /store/<string:name>
 items               DELETE, GET, POST, PUT  /item/<string:name>
 itemslist           GET                     /items
+user                DELETE, GET, POST       /users/<int:user_id>
+userregister        POST                    /register
+userlogin           POST                    /login
+userlogout          POST                    /logout
+tokenrefresh        POST                    /refresh
+confirmationbyuser  GET, POST               /confirmation/user/<int:user_id>
+emailconfirmation   GET                     /confirmation/<string:confirmation_id>
 phoneconfirmation   POST                    /verify-phone/<string:otp>
 phoneotp            POST                    /send-otp
 static              GET                     /static/<path:filename>
-storelist           GET                     /stores
-stores              DELETE, GET, POST       /store/<string:name>
-tokenrefresh        POST                    /refresh
-user                DELETE, GET, POST       /users/<int:user_id>
-userlogin           POST                    /login
-userlogout          POST                    /logout
-userregister        POST                    /register
 ```
 
 ---
