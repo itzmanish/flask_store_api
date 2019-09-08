@@ -1,7 +1,9 @@
-from core import db
+from flask import request, url_for
 from requests import Response
-from flask import url_for, request
-from core.libs import Mailgun, OTP
+
+from core import db
+from core.libs import OTP, Mailgun
+
 from .confirmation import ConfirmationModel
 
 

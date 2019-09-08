@@ -1,5 +1,5 @@
-from server import app
 from core import db
+from server import app
 
 db.init_app(app)
 

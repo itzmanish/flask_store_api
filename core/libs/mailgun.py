@@ -1,7 +1,7 @@
 import os
 from typing import List
-from requests import Response, post
 
+from requests import Response, post
 
 FAILED_LOADING_API_KEY = 'Failed to load Mailgun api key'
 FAILED_LOADING_DOMAIN = 'Failed to load Mailgun domain'

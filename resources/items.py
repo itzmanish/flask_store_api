@@ -1,15 +1,11 @@
 import sqlite3
-from flask import jsonify, request
-from flask_restful import Resource
-from flask_jwt_extended import (
-    jwt_required,
-    get_jwt_claims,
-    jwt_optional,
-    get_jwt_identity,
-    jwt_refresh_token_required,
-)
 
+from flask import jsonify, request
+from flask_jwt_extended import (get_jwt_claims, get_jwt_identity, jwt_optional,
+                                jwt_refresh_token_required, jwt_required)
+from flask_restful import Resource
 from marshmallow import ValidationError
+
 import core.utils as response_string
 from core import pretty_string
 from models.items import ItemModel

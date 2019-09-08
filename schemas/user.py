@@ -1,4 +1,4 @@
-from marshmallow import pre_dump, fields
+from marshmallow import fields, pre_dump
 
 from core import ma
 from models.users import UserModel

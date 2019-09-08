@@ -1,11 +1,11 @@
 import os
+
 from flask_api import FlaskAPI
-from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
 from flask_restful import Api
-from core import ma, db, BLACKLIST
+from flask_sqlalchemy import SQLAlchemy
 
+from core import BLACKLIST, db, ma
 # local import
 from core.config import app_config
 

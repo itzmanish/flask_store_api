@@ -2,7 +2,9 @@
 # https://github.com/sendgrid/sendgrid-python
 import os
 from typing import List
+
 from requests import Response, post
+
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 

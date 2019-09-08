@@ -1,6 +1,6 @@
-from uuid import uuid4
 from random import randint
 from time import time
+from uuid import uuid4
 
 from core import db
 

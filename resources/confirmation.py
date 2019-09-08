@@ -1,13 +1,13 @@
 import traceback
 from time import time
 
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from flask_restful import Resource
-from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from core.libs import MailGunException
-from models.users import UserModel
+from core.utils import USER_NOT_FOUND, pretty_string
 from models.confirmation import ConfirmationModel
-from core.utils import pretty_string, USER_NOT_FOUND
+from models.users import UserModel
 from schemas.confirmation import ConfirmationSchema
 
 confirmation_schema = ConfirmationSchema()

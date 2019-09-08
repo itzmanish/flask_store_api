@@ -1,24 +1,20 @@
 import traceback
-from flask_restful import Resource
+
 from flask import request
-from werkzeug.security import generate_password_hash, check_password_hash
-from flask_jwt_extended import (
-    create_access_token,
-    create_refresh_token,
-    jwt_refresh_token_required,
-    get_jwt_identity,
-    jwt_required,
-    get_raw_jwt,
-)
+from flask_jwt_extended import (create_access_token, create_refresh_token,
+                                get_jwt_identity, get_raw_jwt,
+                                jwt_refresh_token_required, jwt_required)
+from flask_restful import Resource
 from marshmallow import ValidationError
+from werkzeug.security import check_password_hash, generate_password_hash
+
+import core.utils as response_string
 from core import BLACKLIST, pretty_string
 from core.libs import MailGunException
-import core.utils as response_string
-from models.users import UserModel
 from models.confirmation import ConfirmationModel
-from schemas.user import UserSchema, UserPhoneSchema
+from models.users import UserModel
 from schemas.confirmation import ConfirmationSchema
-from flask_jwt_extended import jwt_required
+from schemas.user import UserPhoneSchema, UserSchema
 
 user_schema = UserSchema()
 confirmation_schema = ConfirmationSchema()

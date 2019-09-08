@@ -1,4 +1,5 @@
 import os
+
 from requests import get
 
 FAILED_LOADING_API_KEY = 'Failed to load 2FACTOR api key'

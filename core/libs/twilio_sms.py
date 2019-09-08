@@ -1,6 +1,6 @@
-from twilio.rest import Client
 import os
 
+from twilio.rest import Client
 
 FAILED_LOADING_API_KEY = 'Failed to load 2FACTOR api key'
 SENDING_FAILED = 'Error in sending otp'

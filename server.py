@@ -1,24 +1,21 @@
 # importing neccessary library
 import os
+
 from dotenv import load_dotenv
 from flask import Flask, jsonify
-from flask_restful import Resource, Api
-from marshmallow import ValidationError
 from flask_jwt_extended import JWTManager
+from flask_restful import Api, Resource
+from marshmallow import ValidationError
 
-from resources.users import (UserRegister,
-                             User,
-                             UserLogin,
-                             TokenRefresh,
-                             UserLogout,
-                             PhoneOTP,
-                             )
-from resources.items import ItemsList, Items
-from resources.stores import StoreList, Stores
-from resources.confirmation import EmailConfirmation, ConfirmationByUser, PhoneConfirmation
-from models.users import UserModel
 from app import create_app
 from core import BLACKLIST
+from models.users import UserModel
+from resources.confirmation import (ConfirmationByUser, EmailConfirmation,
+                                    PhoneConfirmation)
+from resources.items import Items, ItemsList
+from resources.stores import StoreList, Stores
+from resources.users import (PhoneOTP, TokenRefresh, User, UserLogin,
+                             UserLogout, UserRegister)
 
 load_dotenv('.env')
 
