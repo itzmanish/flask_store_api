@@ -4,3 +4,5 @@ data.db
 *.pyc
 .env
 migrations
+venv
+.theia
